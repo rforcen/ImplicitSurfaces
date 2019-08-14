@@ -1,0 +1,44 @@
+ #include <simd/simd.h>
+
+ void generateNormals() { // from vertices and indices trigs
+        normals.clear();
+        for (size_t i=0; i<indices.size()-3; i+=3) {
+            int iv[3]={ indices[i+0]*3, indices[i+1]*3, indices[i+2]*3 };
+            auto n = __normal(
+                {vertices[iv[0]+0], vertices[iv[0]+1], vertices[iv[0]+2]},
+                {vertices[iv[1]+0], vertices[iv[1]+1], vertices[iv[1]+2]},
+                {vertices[iv[2]+0], vertices[iv[2]+1], vertices[iv[2]+2]}
+             );
+            for (int i=0; i<3; i++) normals.push_back(n[i]);
+        }
+    }
+
+ simd_double3 __normal(simd_double3 p, simd_double3 p1, simd_double3 p2) {
+        return simd_normalize(simd_cross(p1-p2, p1-p));
+ }
+
+         def draw_mesh(gl):
+            if self.coords is not None:
+                gl.glEnable(gl.GL_NORMALIZE)
+
+                gl.glEnable(gl.GL_LINE_SMOOTH)
+                gl.glColor3f(0.4, 1, 1)
+
+                gl.glBegin(gl.GL_TRIANGLES)
+
+                for i in self.indices:
+                    gl.glVertex3fv(list(self.coords[i]))
+                    gl.glNormal3fv(list(self.normals[i]))
+
+                gl.glEnd()
+
+        def compile(gl):
+            if self.need_compile:
+                gl.glNewList(self.gl_compiled_list, gl.GL_COMPILE)
+                draw_mesh(gl)
+                gl.glEndList()
+                self.need_compile = False
+
+        def draw_list(gl):
+            compile(gl)
+            gl.glCallList(self.gl_compiled_list)
